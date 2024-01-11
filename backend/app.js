@@ -45,46 +45,32 @@ app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        console.log('password : ' + password);
-
         // Find user by email
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(400).send('Invalid email');
+            return res.status(400).json({ error: 'Invalid email' });
         }
-
-        console.log('found');
-
-        // Print hashed password for debugging
-        console.log('Stored Hash:', user.password);
 
         // Validate password
         const isMatch = await bcrypt.compare(password, user.password);
 
-        console.log(isMatch);
-
-        
-
         if (!isMatch) {
-            return res.status(400).send('Invalid password');
+            return res.status(400).json({ error: 'Invalid password' });
         }
 
         console.log('matchh');
 
         // Generate JWT token
-
         const secretKey = process.env.secret_key;
-
-        console.log(secretKey);
-
         const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: '1h' });
 
         res.status(200).json({ token });
     } catch (error) {
-        res.status(400).send(error.message);
+        res.status(400).json({ error: error.message });
     }
 });
+
 
 app.listen(5000, () => {
     console.log(`Server is running on port ${5000}`);
